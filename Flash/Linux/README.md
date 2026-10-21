@@ -55,8 +55,9 @@ bash Flash/Linux/flash-precompiled.sh ~/Downloads/freeeeg32-factory.hex --backen
 bash Flash/Linux/flash-precompiled.sh ~/Downloads/freeeeg32-factory.hex --backend openocd --dry-run
 ```
 
-Without an image argument, the helper selects the latest local factory HEX (or
-the bundled factory HEX). No compiler is needed. Prefer HEX because it carries
+Without an image argument, the helper selects the local build, then
+`Precompiled/freeeeg32-factory.hex` on a fresh source clone (or the bundled factory
+HEX in a release ZIP). No compiler is needed. Prefer HEX because it carries
 its addresses. Use factory HEX for first install/recovery and application UF2
 for normal updates.
 

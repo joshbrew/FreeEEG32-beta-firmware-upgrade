@@ -56,7 +56,8 @@ both this fork's EEG firmware and UF2 bootloader.
 ```
 
 You can drag a HEX/BIN/ELF onto `Flash-Precompiled.cmd`. Without an image argument,
-the helper selects the latest local factory HEX (or the bundled factory HEX).
+the helper selects the local build, then `Precompiled/freeeeg32-factory.hex`
+on a fresh source clone (or the bundled factory HEX in a release ZIP).
 No compiler is needed for this action. Prefer HEX because it carries its addresses.
 Use the factory HEX for first install/recovery and application UF2 for normal updates.
 

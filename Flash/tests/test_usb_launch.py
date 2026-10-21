@@ -14,6 +14,42 @@ BASH = os.environ.get('FREEEEG32_TEST_BASH') or shutil.which('bash')
 
 class USBLaunch(unittest.TestCase):
     @unittest.skipUnless(os.name == 'nt', 'Windows PowerShell required')
+    def test_windows_usb_update_finds_precompiled_uf2_on_fresh_clone(self):
+        with tempfile.TemporaryDirectory(prefix='FreeEEG32 precompiled ') as folder:
+            root, tooling, env = self.prepare(folder, True)
+            subprocess.run([sys.executable, '-m', 'venv', '--without-pip', str(root / '.venv')],
+                           check=True, capture_output=True, timeout=30)
+            image = root / 'Precompiled/freeeeg32-application.uf2'
+            image.parent.mkdir()
+            image.write_bytes(b'test image; recording stub never flashes')
+            shell = str(Path(os.environ['SystemRoot']) / 'System32/WindowsPowerShell/v1.0/powershell.exe')
+            args = [shell, '-NoLogo', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File',
+                    str(tooling / 'launch.ps1'), '-Action', 'usb-update']
+            result = subprocess.run(args, env=env, cwd=root.parent, capture_output=True, text=True, timeout=20)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            actual = json.loads((root / 'arguments.json').read_text())
+            self.assertEqual(actual[:2], ['update', '--image'])
+            self.assertEqual(Path(actual[2]).resolve(), image.resolve())
+
+    @unittest.skipUnless(BASH and (os.name == 'posix' or os.environ.get('FREEEEG32_TEST_BASH')), 'Bash required')
+    def test_linux_usb_update_finds_precompiled_uf2_on_fresh_clone(self):
+        with tempfile.TemporaryDirectory(prefix='FreeEEG32 precompiled ') as folder:
+            root, tooling, env = self.prepare(folder, True)
+            image = root / 'Precompiled/freeeeg32-application.uf2'
+            image.parent.mkdir()
+            image.write_bytes(b'test image; recording stub never flashes')
+            python = root / '.venv/bin/python'
+            python.parent.mkdir(parents=True)
+            python.write_text(f'#!/usr/bin/env bash\nexec "{Path(sys.executable).as_posix()}" "$@"\n', newline='\n')
+            python.chmod(0o755)
+            result = subprocess.run([BASH, str(tooling / 'launch.sh'), 'usb-update'],
+                                    env=env, cwd=root.parent, capture_output=True, text=True, timeout=20)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            actual = json.loads((root / 'arguments.json').read_text())
+            self.assertEqual(actual[:2], ['update', '--image'])
+            self.assertEqual(Path(actual[2]).resolve(), image.resolve())
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows PowerShell required')
     def test_setup_falls_back_when_py_launcher_cannot_find_python(self):
         with tempfile.TemporaryDirectory(prefix='FreeEEG32 Python fallback ') as folder:
             root = Path(folder)

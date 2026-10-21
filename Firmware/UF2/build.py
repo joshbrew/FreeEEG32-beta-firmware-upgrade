@@ -12,6 +12,7 @@ import subprocess
 import sys
 import zipfile
 from pack import APP_BASE, APP_META, STAGE_META, application_image, intel_hex, uf2_file
+from precompiled import sync_bundle
 
 HERE = Path(__file__).resolve().parent
 BETA = HERE.parent / 'Beta'
@@ -167,6 +168,8 @@ def build(gcc_dir=None, jobs=None, cpu_mhz=80):
                 if source.is_file(): archive.write(source, 'tools/' + source.name)
     print(f'UF2 release bundle: {out / "freeeeg32-uf2-release.zip"}')
     beta.archive_build(out, ['freeeeg32-uf2-release.zip', 'manifest.json'], cpu_mhz, manifest['build_id'], 'uf2')
+    if cpu_mhz == 80:
+        sync_bundle(out / 'freeeeg32-uf2-release.zip', HERE.parents[1] / 'Precompiled')
     return out
 
 

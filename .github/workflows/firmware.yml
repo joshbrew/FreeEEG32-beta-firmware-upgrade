@@ -2,11 +2,14 @@ name: Firmware build and simulation
 on:
   workflow_dispatch:
   push:
-    paths: ['Firmware/**', 'Flash/**', 'SetupGuides/images/**', 'FreeEEG32*', '.github/workflows/firmware.yml']
+    paths: ['Firmware/**', 'Flash/**', 'SetupGuides/images/**', 'FreeEEG32*', 'README.md', '.gitattributes', '.github/workflows/firmware.yml']
   pull_request:
-    paths: ['Firmware/**', 'Flash/**', 'SetupGuides/images/**', 'FreeEEG32*', '.github/workflows/firmware.yml']
+    paths: ['Firmware/**', 'Flash/**', 'SetupGuides/images/**', 'FreeEEG32*', 'README.md', '.gitattributes', '.github/workflows/firmware.yml']
 permissions:
   contents: read
+concurrency:
+  group: firmware-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   launchers:
     strategy:
@@ -62,3 +65,70 @@ jobs:
             Firmware/build/uf2/freeeeg32-uf2-release.zip
             Firmware/build/uf2/manifest.json
           if-no-files-found: error
+  publish:
+    name: Update precompiled downloads and rolling beta
+    needs: [launchers, uf2]
+    if: >-
+      github.repository == 'joshbrew/FreeEEG32-beta-firmware-upgrade' &&
+      github.ref == 'refs/heads/master' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          name: freeeeg32-uf2-80mhz-board-test-candidate
+          path: Firmware/build/publish
+      - name: Commit verified downloads and update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          head_sha=$(git ls-remote origin refs/heads/master | cut -f1)
+          if [[ "$head_sha" != "$GITHUB_SHA" ]]; then
+            echo 'A newer commit is on master; its workflow will publish the downloads.'
+            exit 0
+          fi
+          python Firmware/UF2/precompiled.py --bundle Firmware/build/publish/freeeeg32-uf2-release.zip
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- Precompiled/
+          if ! git diff --cached --quiet; then
+            git commit -m "Update 80 MHz firmware downloads for ${GITHUB_SHA:0:12}"
+            # No force push: if master advanced during validation, publishing stops.
+            git push origin HEAD:master
+          fi
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          manifest = json.loads(Path('Precompiled/manifest.json').read_text())
+          repo, sha = os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_SHA']
+          run = f"https://github.com/{repo}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+          notes = f"""Latest default **80 MHz** build from [`{sha[:12]}`](https://github.com/{repo}/commit/{sha}).
+
+          - **freeeeg32-uf2-release.zip**: complete package with Windows/Linux setup and flashing launchers.
+          - **freeeeg32-factory.hex**: EEG firmware + UF2 bootloader; install/recover with ST-Link (menu 3).
+          - **freeeeg32-application.uf2**: USB application update with the loader already installed (menu 5 or double-reset).
+          - **manifest.json / SHA256SUMS.txt**: build identity and checksums.
+
+          Build ID: `{manifest['build_id']}`. Compiler: {manifest['compiler']}.
+          All seven firmware clock-profile builds/simulations and Windows/Linux helper checks passed in [this workflow]({run}).
+          The same default files are tracked in [Precompiled/](https://github.com/{repo}/tree/master/Precompiled).
+          This rolling beta is replaced after successful pushes to master. Physical-board validation remains pending.
+          """
+          Path('Firmware/build/publish/release-notes.md').write_text(notes, encoding='utf-8')
+          PY
+          assets=(Precompiled/freeeeg32-factory.hex Precompiled/freeeeg32-application.uf2 Precompiled/freeeeg32-uf2-release.zip Precompiled/manifest.json Precompiled/SHA256SUMS.txt)
+          if gh release view latest-beta --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload latest-beta "${assets[@]}" --repo "$GITHUB_REPOSITORY" --clobber
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/latest-beta" -f sha="$GITHUB_SHA" -F force=true
+            gh release edit latest-beta --repo "$GITHUB_REPOSITORY" --title 'Latest beta - 80 MHz' --notes-file Firmware/build/publish/release-notes.md --prerelease
+          else
+            gh release create latest-beta "${assets[@]}" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'Latest beta - 80 MHz' --notes-file Firmware/build/publish/release-notes.md --prerelease
+          fi

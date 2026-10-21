@@ -68,6 +68,8 @@ if ($Action -eq 'usb-update') {
     $device = if ($repo) { Join-Path $root 'Firmware/Beta/device.py' } else { Join-Path $root 'device.py' }
     if (!$Image) {
         $Image = if ($repo) { Join-Path $root 'Firmware/build/uf2/freeeeg32-application.uf2' } else { Join-Path $root 'freeeeg32-application.uf2' }
+        $precompiled = Join-Path $root 'Precompiled/freeeeg32-application.uf2'
+        if ($repo -and !(Test-Path -LiteralPath $Image) -and (Test-Path -LiteralPath $precompiled)) { $Image = $precompiled }
     }
     $arguments = @($device,'update','--image',$Image)
     if ($Port) { $arguments += @('--port',$Port) }

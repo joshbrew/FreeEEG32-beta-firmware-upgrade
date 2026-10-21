@@ -2,6 +2,8 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
+import flash
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -32,6 +34,21 @@ class FakePort:
 
 
 class ToolTests(unittest.TestCase):
+    def test_fresh_clone_uses_tracked_factory_hex_and_local_build_takes_priority(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder).resolve()
+            helper = root / 'Firmware/Beta/flash.py'
+            helper.parent.mkdir(parents=True)
+            tracked = root / 'Precompiled/freeeeg32-factory.hex'
+            tracked.parent.mkdir()
+            tracked.write_text(':00000001FF')
+            with patch.object(flash, '__file__', str(helper)):
+                self.assertEqual(Path(flash.default_image()), tracked)
+                local = root / 'Firmware/build/uf2/freeeeg32-factory.hex'
+                local.parent.mkdir(parents=True)
+                local.write_text(':00000001FF')
+                self.assertEqual(Path(flash.default_image()), local)
+
     def test_flash_verifies_and_resets_binary_at_base(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'firmware with spaces.bin'
@@ -39,7 +56,7 @@ class ToolTests(unittest.TestCase):
             args = flash_command(path, 'programmer', '12345')
             self.assertIn('mode=UR', args)
             self.assertIn('sn=12345', args)
-            self.assertEqual(args[-4:], [str(path), '0x08000000', '-v', '-rst'])
+            self.assertEqual(args[-4:], [str(path.resolve()), '0x08000000', '-v', '-rst'])
 
     def test_hex_uses_embedded_address(self):
         with tempfile.TemporaryDirectory() as folder:

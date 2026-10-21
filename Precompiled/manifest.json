@@ -1,0 +1,39 @@
+{
+  "board": "FreeEEG32-beta STM32H743ZI",
+  "version": "qos-5-uf2-v1",
+  "hardware_validated": false,
+  "build_id": "678c689d214dd29d9a9d885d6c2b346d",
+  "compiler": "arm-none-eabi-gcc.exe (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 14.2.1 20241119",
+  "settings_address": "0x081c0000",
+  "idle_mode": "Sleep (WFI), clocks retained",
+  "application_clocks": {
+    "cpu_mhz": 80,
+    "ahb_mhz": 40,
+    "apb_mhz": 20,
+    "usb_mhz": 48,
+    "adc_mclk_hz": 8192000,
+    "revision_v_required": false,
+    "fallback_on_non_v": null
+  },
+  "bootloader_cpu_mhz": 80,
+  "application_address": "0x8020000",
+  "maximum_application_bytes": 786432,
+  "files": {
+    "freeeeg32-factory.hex": {
+      "bytes": 254543,
+      "sha256": "b7125987839e8eb4049d3dc25740c8950bd8f464cb989e4392508ac48231bdce"
+    },
+    "freeeeg32-application.uf2": {
+      "bytes": 156672,
+      "sha256": "84bbc5bc5f5cf185287db1c4b3bab772f5cbd2b05f939e59197df31061d48c70"
+    },
+    "freeeeg32-application.hex": {
+      "bytes": 188731,
+      "sha256": "7fc24c1120671b31692551ebdb0cf9dd14a6b73c2e5eabb892aa30554f52cea9"
+    },
+    "freeeeg32-bootloader.hex": {
+      "bytes": 65825,
+      "sha256": "d058a9ae13e3b4cbb90861cdbbc64afc74ee453281fb169bd395abc458e2656e"
+    }
+  }
+}

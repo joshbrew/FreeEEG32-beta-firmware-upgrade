@@ -140,6 +140,7 @@ def openocd_command(image, executable, serial=None, address=None, probe='stlink'
 def default_image():
     here = Path(__file__).resolve().parent
     candidates = [here / 'freeeeg32-factory.hex', here.parent / 'build/uf2/freeeeg32-factory.hex',
+                  here.parents[1] / 'Precompiled/freeeeg32-factory.hex',
                   here.parent / 'build/release/freeeeg32-beta.hex']
     return str(next((path for path in candidates if path.is_file()), candidates[1]))
 

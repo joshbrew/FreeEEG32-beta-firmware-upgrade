@@ -72,8 +72,12 @@ an entire source build as root just to access the probe.
 Extract `freeeeg32-uf2-release.zip`, keep its `tools/` folder, and run its
 `FreeEEG32.cmd` or `bash FreeEEG32.sh`. The flash and USB-update commands above
 work in that folder too. Source-build actions require the repository checkout.
-The ZIP is produced locally by every UF2 build and by the repository's firmware CI.
-It is not automatically published as a GitHub Release.
+Every UF2 build produces a ZIP. Default 80 MHz builds also refresh the tracked
+`Precompiled/` downloads. After pushes to `master`, successful firmware and helper
+checks refresh that folder and the
+[rolling beta release](https://github.com/joshbrew/FreeEEG32-beta-firmware-upgrade/releases/tag/latest-beta).
+Other clock profiles are kept as workflow artifacts. Generated build intermediates
+remain ignored. Pull the automatic download commit before your next push.
 
 ### CPU clock profiles
 

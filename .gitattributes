@@ -5,3 +5,10 @@ Firmware/tools/*.sh text eol=lf
 FreeEEG32.cmd text eol=crlf
 Flash/Windows/*.cmd text eol=crlf
 Firmware/Beta/flash.cmd text eol=crlf
+
+# Preserve published firmware bytes and checksums across platforms.
+Precompiled/*.zip binary
+Precompiled/*.hex -text whitespace=cr-at-eol
+Precompiled/*.uf2 binary
+Precompiled/manifest.json -text whitespace=cr-at-eol
+Precompiled/SHA256SUMS.txt -text

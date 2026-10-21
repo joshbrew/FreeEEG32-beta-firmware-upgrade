@@ -98,7 +98,7 @@ class Connection:
 
 class Hardware:
     def __init__(self, drive):
-        self.drive = drive
+        self.drive = Path(drive).resolve()
         self.drive.mkdir()
         self.phase = 0
         self.commands = []

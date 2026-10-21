@@ -58,6 +58,9 @@ if [[ "$task_action" == usb-update ]]; then
     fi
     if [[ "$task_repo" == 1 ]]; then task_image="$task_root/Firmware/build/uf2/freeeeg32-application.uf2";
     else task_image="$task_root/freeeeg32-application.uf2"; fi
+    if [[ "$task_repo" == 1 && ! -f "$task_image" && -f "$task_root/Precompiled/freeeeg32-application.uf2" ]]; then
+        task_image="$task_root/Precompiled/freeeeg32-application.uf2"
+    fi
     "$task_python" -u "$task_device" update --image "$task_image" "${task_device_args[@]}" "$@"
 fi
 case "$task_action" in

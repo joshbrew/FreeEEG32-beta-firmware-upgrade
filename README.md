@@ -5,6 +5,12 @@ The board streams 32-channel EEG over USB and supports runtime sampling and gain
 
 ## Start here
 
+**[Download the precompiled ZIP or factory HEX](Precompiled/README.md)**, or use the
+[rolling beta release](https://github.com/joshbrew/FreeEEG32-beta-firmware-upgrade/releases/tag/latest-beta).
+After pushes to `master`, successful checks refresh both downloads automatically.
+The default 80 MHz ZIP and HEX are also tracked in the repository's `Precompiled/`
+folder. Source builds at 80 MHz refresh that folder for your next commit.
+
 **Windows:** double-click **[FreeEEG32.cmd](FreeEEG32.cmd)** in the main folder.
 
 **Linux:** open a terminal in the main folder and run:
