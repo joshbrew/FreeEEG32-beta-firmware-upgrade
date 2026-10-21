@@ -118,7 +118,7 @@ In any serial terminal, commands start with `!` and end in CR, LF, or CRLF:
 | --- | --- |
 | `!HELP` | List supported commands |
 | `!HELP SETTINGS` / `!HELP PRESETS` / `!HELP DIAG` | Usage, defaults and diagnostic units |
-| `!INFO` | Board, firmware/build identity, protocol and runtime CPU/AHB MHz |
+| `!INFO` | Board, firmware/build identity, protocol, runtime CPU/AHB MHz and clock source (`clock=HSE`, or `HSI` if the crystal did not start) |
 | `!STATUS` | Rate, complete captures, missed DRDY events, DMA errors, USB/UART drops, RX overflow, ADC fault and `readback_mask` (ADCs whose register readback disagreed with a write) |
 | `!CHECK` | Measure DRDY for 500 ms against the selected rate (`drdy_hz`, `rate_ok` within 1 %) and read back the SRC dividers, SINC3 filter selection and gains on all four ADCs; report pass/fail masks and the last failed ADC/register/operation/value |
 | `!DIAG` | Last full streaming window's measured rates/sleep wait fraction; maximum observed capture/latency/work times; reset flags |
@@ -190,7 +190,10 @@ or during streaming.
 
 ### Efficiency, throughput and heat
 
-The default remains **80 MHz CPU / 40 MHz AHB**. Idle WFI is **off by default**
+The default remains **80 MHz CPU / 40 MHz AHB**, now derived from the board's 16 MHz
+crystal Y2 (HSE) instead of the internal HSI oscillator; if Y2 does not start, the
+firmware falls back to HSI. The ADCs keep their own 8.192 MHz oscillator (U8), and
+USB (HSI48 + CRS) and USART1 (HSI) clocks are unchanged. Idle WFI is **off by default**
 (`FREEEEG32_IDLE_WFI=0`, `!INFO` reports `idle=spin`): on the bench board the core
 stayed in WFI with enabled USB/EXTI interrupts pending. Build with
 `-DFREEEEG32_IDLE_WFI=1` to test it. When enabled, WFI uses ordinary **Sleep**,

@@ -18,6 +18,8 @@ void runtime_sleep(void); /* Ordinary WFI Sleep (or nothing); caller masks IRQs 
 void runtime_adc_sync(void);
 /* Diagnostic: one raw SPI frame to ADC 0..3 (chip select handled by the SPI peripheral). */
 int runtime_adc_spi_raw(unsigned adc, uint8_t *tx, uint8_t *rx, uint8_t length);
+/* PLL1 input actually in use: "HSE" (crystal Y2), "HSI" or "CSI". */
+const char *runtime_clock_source(void);
 int runtime_watchdog_start(void); /* IWDG1, nominal 32.768 s; LSI tolerance applies. */
 void runtime_watchdog_feed(void);
 #endif

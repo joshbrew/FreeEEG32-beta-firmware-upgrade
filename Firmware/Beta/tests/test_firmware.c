@@ -25,6 +25,7 @@ int runtime_adc_spi_raw(unsigned adc, uint8_t *tx, uint8_t *rx, uint8_t length)
 { unsigned i; assert(adc < 4 && length <= 3); for (i = 0; i < length; ++i) rx[i] = (uint8_t)(tx[0] + i); return 0; }
 static unsigned adc_syncs;
 void runtime_adc_sync(void) { ++adc_syncs; }
+const char *runtime_clock_source(void) { return "HSE"; }
 int runtime_watchdog_start(void) { return 1; }
 void runtime_watchdog_feed(void) { }
 void test_set_primask(uint32_t mask)
@@ -232,7 +233,7 @@ int main(void)
     command(line("!SPIWRITE 3 17 64\n")); assert(strstr(reply, "adc=3 reg=0x11 value=0x40 rx=11,12 status=0"));
     command(line("!INFO\n")); assert(strstr(reply, "cpu_mhz=80 ahb_mhz=40"));
     assert(strstr(reply, "build=" FREEEEG32_BUILD_TAG) && reply_length < sizeof(reply));
-    assert(strstr(reply, "watchdog=IWDG1"));
+    assert(strstr(reply, "watchdog=IWDG1") && strstr(reply, "clock=HSE"));
     SystemCoreClock = 40000000u;
     command(line("!INFO\n")); assert(strstr(reply, "cpu_mhz=40 ahb_mhz=40"));
     command(line("!START\n")); assert(!start_after_reply && !strncmp(reply, "ERR ADC", 7));

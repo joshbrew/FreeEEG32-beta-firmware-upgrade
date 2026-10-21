@@ -45,6 +45,16 @@
 #else
 #define FREEEEG32_PLL_VCO RCC_PLL1VCOMEDIUM
 #endif
+/* H7 crystal Y2 (HSE): 16 MHz per the BOM, confirmed on the bench by timing
+ * TIM2 against the PC clock. prepare.py writes the same value into HSE_VALUE.
+ * The PLL input stays at 16 MHz, as with HSI / 4, so every profile keeps its
+ * N/P/Q/R. */
+#define FREEEEG32_HSE_HZ 16000000u
+#define FREEEEG32_HSE_PLLM (FREEEEG32_HSE_HZ / 16000000u)
+#define FREEEEG32_HSE_PLLN FREEEEG32_PLL_N
+#define FREEEEG32_HSE_PLLP 2u
+#define FREEEEG32_HSE_PLLQR FREEEEG32_PLL_QR
+
 #if FREEEEG32_CPU_MHZ == 240
 /* HCLK=60 MHz, VOS2: above the 55 MHz zero-wait-state limit. */
 #define FREEEEG32_FLASH_LATENCY FLASH_LATENCY_1

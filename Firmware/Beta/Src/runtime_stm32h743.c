@@ -60,6 +60,15 @@ int runtime_adc_spi_raw(unsigned adc, uint8_t *tx, uint8_t *rx, uint8_t length)
                               dev->spi_dev.chip_select_pin, tx, rx, length);
 }
 
+const char *runtime_clock_source(void)
+{
+    switch (RCC->PLLCKSELR & RCC_PLLCKSELR_PLLSRC) {
+    case RCC_PLLCKSELR_PLLSRC_HSE: return "HSE";
+    case RCC_PLLCKSELR_PLLSRC_CSI: return "CSI";
+    default: return "HSI";
+    }
+}
+
 /* FREEEEG32_IDLE_WFI defaults to 0 in runtime.h. */
 void runtime_sleep(void)
 {

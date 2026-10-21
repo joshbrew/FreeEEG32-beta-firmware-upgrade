@@ -53,6 +53,26 @@ def prepare():
                          ('PLLVCOSEL = RCC_PLL1VCOMEDIUM', 'PLLVCOSEL = FREEEEG32_PLL_VCO'),
                          ('&RCC_ClkInitStruct, FLASH_LATENCY_0', '&RCC_ClkInitStruct, FREEEEG32_FLASH_LATENCY')):
             s = replace(s, old, new)
+        # Run the H7 from its crystal (Y2, HSE) instead of the internal HSI oscillator, which
+        # left every H7 timer about 0.4 % off. USB (HSI48), USART1 and the SPI/SAI kernel
+        # clocks (CKPER = HSI) are unchanged. If Y2 does not start, fall back to HSI.
+        s = replace(s, '  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48|RCC_OSCILLATORTYPE_HSI;\n',
+                    '  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48|RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE;\n'
+                    '  RCC_OscInitStruct.HSEState = RCC_HSE_ON;\n')
+        s = replace(s, '  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;\n  RCC_OscInitStruct.PLL.PLLM = 4;\n'
+                       '  RCC_OscInitStruct.PLL.PLLN = FREEEEG32_PLL_N;\n  RCC_OscInitStruct.PLL.PLLP = 2;\n'
+                       '  RCC_OscInitStruct.PLL.PLLQ = FREEEEG32_PLL_QR;\n  RCC_OscInitStruct.PLL.PLLR = FREEEEG32_PLL_QR;\n',
+                    '  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;\n  RCC_OscInitStruct.PLL.PLLM = FREEEEG32_HSE_PLLM;\n'
+                    '  RCC_OscInitStruct.PLL.PLLN = FREEEEG32_HSE_PLLN;\n  RCC_OscInitStruct.PLL.PLLP = FREEEEG32_HSE_PLLP;\n'
+                    '  RCC_OscInitStruct.PLL.PLLQ = FREEEEG32_HSE_PLLQR;\n  RCC_OscInitStruct.PLL.PLLR = FREEEEG32_HSE_PLLQR;\n')
+        s = replace(s, '  RCC_OscInitStruct.PLL.PLLFRACN = 0;\n  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)\n  {\n    Error_Handler();\n  }\n',
+                    '  RCC_OscInitStruct.PLL.PLLFRACN = 0;\n  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)\n  {\n'
+                    '    /* Y2 did not start: run from the internal HSI oscillator as before. */\n'
+                    '    RCC_OscInitStruct.HSEState = RCC_HSE_OFF;\n'
+                    '    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;\n    RCC_OscInitStruct.PLL.PLLM = 4;\n'
+                    '    RCC_OscInitStruct.PLL.PLLN = FREEEEG32_PLL_N;\n    RCC_OscInitStruct.PLL.PLLP = 2;\n'
+                    '    RCC_OscInitStruct.PLL.PLLQ = FREEEEG32_PLL_QR;\n    RCC_OscInitStruct.PLL.PLLR = FREEEEG32_PLL_QR;\n'
+                    '    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) Error_Handler();\n  }\n')
         # USB is available before starting lengthy ADC and optional SD initialization.
         s = replace(s, '    BSP_SD_Init();', '    /* SD initialization is optional; no card is required to acquire EEG. */')
         s = replace(s, '      int ad_adc1=0;', '      int ad_adc1=0;\n      FreeEEG32_Run(); /* Default 32-channel acquisition and USB control loop. */')
@@ -62,6 +82,10 @@ def prepare():
         s = s.replace(', SAI_DATASIZE_32);', ', uint8_ad_chan_number);')
         return s
     edit('Src/main.c', main)
+    # Y2 is 16 MHz (BOM, bench-confirmed); the base configuration said 32 MHz. Keep in
+    # step with FREEEEG32_HSE_HZ in clock_profile.h.
+    edit('Inc/stm32h7xx_hal_conf.h', lambda s: replace(s, '#define HSE_VALUE    ((uint32_t)32000000)',
+                                                       '#define HSE_VALUE    ((uint32_t)16000000)'))
     # Application settings probe supplies a precise, ECC-aware BusFault handler.
     edit('Src/stm32h7xx_it.c', lambda s: replace(s, 'void BusFault_Handler(void)',
                                               'void Legacy_BusFault_Handler(void)'))
