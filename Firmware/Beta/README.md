@@ -268,6 +268,13 @@ These address specific defects; they do not establish the cause of every reporte
 duplicate sample. The older optional DSP/SD/output modes are not exercised by this
 new default loop and still have inherited compiler warnings.
 
+## Multiple boards
+
+See the [stacking guide](../../SetupGuides/FreeEEG32_Stacking.md) for shared
+8.192 MHz ADC clock wiring, follower clock/sync isolation and the final master
+RATE pulse. There is no stack-role setting or SYNC command. Each board keeps its
+own USB stream; sample alignment across streams needs host coordination.
+
 ## Verification
 
 ```powershell

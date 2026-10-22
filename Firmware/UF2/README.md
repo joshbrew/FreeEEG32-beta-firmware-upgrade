@@ -79,6 +79,9 @@ checks refresh that folder and the
 Other clock profiles are kept as workflow artifacts. Generated build intermediates
 remain ignored. Pull the automatic download commit before your next push.
 
+For multiple boards, see [stack clock wiring and synchronization](../../SetupGuides/FreeEEG32_Stacking.md).
+Each board keeps its own USB data connection.
+
 ### CPU clock profiles
 
 Use the main-folder menu to choose **40, 80, 160, 240, 320, 400 or 480 MHz**.

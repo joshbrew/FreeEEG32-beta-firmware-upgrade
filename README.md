@@ -151,6 +151,16 @@ board. Recovery from firmware that blocks SWD needs a probe with working STM32 N
 [ST-Link connector reference](https://www.st.com/resource/en/user_manual/dm00026748-st-link-v2-in-circuit-debugger-programmer-for-stm8-and-stm32-stmicroelectronics.pdf)
 · [Detailed wiring guide](SetupGuides/FreeEEG32_Programming_and_Updates.md)
 
+## Stacking boards
+
+Share **U8's 8.192 MHz ADC clock**, leaving each STM32's Y2 crystal in place.
+Use one clock/sync master and isolate the followers' local outputs at **R117/J73**
+and **R115/J65**. The current firmware needs no clock-source setting, but aligned
+conversions require a final master sync after all boards are configured. Each
+board still uses its own USB connection, and host software must align their data.
+
+**[Stack wiring, master/follower links and setup commands](SetupGuides/FreeEEG32_Stacking.md)**
+
 ## Features added by this fork
 
 | Feature | Details |

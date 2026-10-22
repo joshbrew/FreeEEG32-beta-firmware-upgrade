@@ -2,9 +2,9 @@ name: Firmware build and simulation
 on:
   workflow_dispatch:
   push:
-    paths: ['Firmware/**', 'Flash/**', 'SetupGuides/images/**', 'FreeEEG32*', 'README.md', '.gitattributes', '.github/workflows/firmware.yml']
+    paths: ['Firmware/**', 'Flash/**', 'SetupGuides/**', 'FreeEEG32*', 'README.md', '.gitattributes', '.github/workflows/firmware.yml']
   pull_request:
-    paths: ['Firmware/**', 'Flash/**', 'SetupGuides/images/**', 'FreeEEG32*', 'README.md', '.gitattributes', '.github/workflows/firmware.yml']
+    paths: ['Firmware/**', 'Flash/**', 'SetupGuides/**', 'FreeEEG32*', 'README.md', '.gitattributes', '.github/workflows/firmware.yml']
 permissions:
   contents: read
 concurrency:

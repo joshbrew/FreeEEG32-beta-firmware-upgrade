@@ -140,14 +140,19 @@ def build(gcc_dir=None, jobs=None, cpu_mhz=80):
             readme = readme.replace('../../SetupGuides/images/st-link-v2-reference.jpg', 'st-link-v2-reference.jpg')
             readme = readme.replace('../Beta/README.md', 'CONTROL.md')
             readme = readme.replace('../../Flash/', 'Flash/')
+            readme = readme.replace('../../SetupGuides/FreeEEG32_Stacking.md', 'STACKING.md')
             readme += '\n![SWD header reference](basic_layout_swd.png)\n'
             archive.writestr('README.md', readme)
         archive.write(HERE.parents[1] / 'SetupGuides/images/basic_layout_swd.png', 'basic_layout_swd.png')
         archive.write(HERE.parents[1] / 'SetupGuides/images/st-link-v2-reference.jpg', 'st-link-v2-reference.jpg')
         controls = (BETA / 'README.md').read_text(encoding='utf-8').replace('../UF2/README.md', 'README.md')
         controls = controls.replace('../../Flash/', 'Flash/')
+        controls = controls.replace('../../SetupGuides/FreeEEG32_Stacking.md', 'STACKING.md')
         controls = controls.replace('../../SetupGuides/FreeEEG32_Programming_and_Updates.md', 'README.md#wiring-and-entry')
         archive.writestr('CONTROL.md', controls)
+        stacking = (HERE.parents[1] / 'SetupGuides/FreeEEG32_Stacking.md').read_text(encoding='utf-8')
+        stacking = stacking.replace('../AssemblyFiles/', 'https://github.com/joshbrew/FreeEEG32-beta-firmware-upgrade/blob/master/AssemblyFiles/')
+        archive.writestr('STACKING.md', stacking)
         # Include the same clearly named platform launchers in precompiled bundles.
         for source in (HERE.parents[1] / 'Flash').rglob('*'):
             if not source.is_file() or source.suffix not in ('.md', '.cmd', '.sh'):
